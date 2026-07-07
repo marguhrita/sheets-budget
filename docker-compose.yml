@@ -1,0 +1,18 @@
+services:
+  google-workspace-mcp:
+    build:
+      context: https://github.com/taylorwilsdon/google_workspace_mcp.git
+    image: sheets-budget/google-workspace-mcp
+    container_name: sheets-budget-mcp
+    ports:
+      - "${WORKSPACE_MCP_PORT:-8000}:8000"
+    environment:
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET}
+      OAUTHLIB_INSECURE_TRANSPORT: ${OAUTHLIB_INSECURE_TRANSPORT:-0}
+      WORKSPACE_MCP_TOOLS: ${WORKSPACE_MCP_TOOLS:-sheets,drive}
+      WORKSPACE_MCP_TOOL_TIER: ${WORKSPACE_MCP_TOOL_TIER:-core}
+      WORKSPACE_MCP_PORT: ${WORKSPACE_MCP_PORT:-8000}
+      WORKSPACE_MCP_STATELESS_MODE: ${WORKSPACE_MCP_STATELESS_MODE:-false}
+    command: ["--transport", "streamable-http"]
+    restart: unless-stopped
