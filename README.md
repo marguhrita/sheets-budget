@@ -61,7 +61,41 @@ claude mcp add --transport http google-sheets http://localhost:8000/mcp
 }
 ```
 
+## 5. Generate the budget spreadsheet
+
+`scripts/build_budget.py` creates a new Google Sheet with the three core tabs (Budget
+Planner, Smart Bill Calendar, Transactions Tracker — see `docs/SPEC.md` for the full
+target). It calls the Sheets API directly using the same OAuth client from `.env`, so it
+doesn't need the MCP server running.
+
+```bash
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+export $(grep -v '^#' .env | xargs)   # or just export GOOGLE_OAUTH_CLIENT_ID/SECRET
+python scripts/build_budget.py "My 2026 Budget"
+```
+
+First run opens a browser for the Google OAuth consent flow and caches the token in
+`token.json` (gitignored). It prints the new spreadsheet's URL when done.
+
+Conventions used in the generated sheet:
+- **Amount columns are signed** — income positive, bills/expenses/debt payments negative —
+  so totals and running balances are plain sums.
+- **Smart Bill Calendar** has one checkbox column per month; ticking a box includes that
+  row's amount in that month's `Monthly Net Total`.
+- **Transactions Tracker**'s running balance is a single `ARRAYFORMULA` in the first data
+  row, not one formula per row.
+
+Not yet built (tracked in `docs/SPEC.md`): Budget Template, Annual/Budget Dashboards, Debt
+Payoff Tracker, Savings Tracker, Net Worth Tracker, 50/30/20 Tracker, No Spend Tracker,
+and any charts.
+
+Once the MCP server (steps 1-4) is connected to Claude, you can also ask Claude to read
+back and adjust the generated sheet directly through the `sheets` tools — the script is
+just the bootstrap.
+
 ## Status
 
 - [x] Repo + self-hosted MCP server config
-- [ ] Build the annual budget spreadsheet (see `docs/SPEC.md`)
+- [x] MVP: Budget Planner, Smart Bill Calendar, Transactions Tracker (`scripts/build_budget.py`)
+- [ ] Dashboards, Debt Payoff / Savings / Net Worth trackers, 50/30/20, No Spend, charts (see `docs/SPEC.md`)
